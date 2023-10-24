@@ -1,0 +1,4 @@
+description; value; start_date; end_date
+
+oldFirstDayOfTheMonth; 123; 2002.07.01; 2200.05.01
+shortFromRecent; 333; 2022.05.01; 2022.12.01
