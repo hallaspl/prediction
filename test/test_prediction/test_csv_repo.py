@@ -43,7 +43,6 @@ def test_store_newFileCreated(
     assert expected_file_path.is_file()
 
 
-
 def test_storeLoad_logsAreEqual(
     repo: IBalanceRepo, example_log: BalanceLog
 ):

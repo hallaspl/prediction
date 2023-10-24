@@ -62,6 +62,7 @@ class CsvBalanceRepo(IBalanceRepo):
             return self.__load_log(log_id)
         except FileNotFoundError as err:
             raise UnknownIdError from err
+
     def __load_log(self, log_id: LogId) -> BalanceLog:
         file_path = self.__id_to_path(log_id)
         balances = []
