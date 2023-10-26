@@ -11,6 +11,7 @@ from .types import (
     Event,
 )
 from ._event_generator import EventGenerator
+from ._compare_history import HistoryComparator
 from ._balance_calculator import BalanceLogCalulator, ReportDay
 from ._validation import validate_event_data, validate_monthly_event_data
 from ._main import show_balance, MainCfg, build_data_sources_configuration, read_initial_balance
