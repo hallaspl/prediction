@@ -2,7 +2,7 @@ import pytest
 from typing import List
 from datetime import datetime
 from pathlib import Path
-from prediction.repo import CsvBalanceRepo, IBalanceRepo, LogId, BalanceLog, DuplicateIdError, UnknownIdError
+from prediction.repo import CsvBalanceRepo, IBalanceRepo, HistoryId, BalanceHistory, DuplicateIdError, UnknownIdError
 from prediction import Balance
 
 
@@ -12,8 +12,8 @@ def example_log() -> List[Balance]:
         Balance("some notes", datetime.now(), 12213),
         Balance("Additional notes", datetime.now(), 444)
     ]
-    log_id = LogId("121314")
-    return BalanceLog(log_id, log)
+    log_id = HistoryId("121314")
+    return BalanceHistory(log_id, log)
 
 
 @pytest.fixture
@@ -33,30 +33,30 @@ def test_dirDoseNotExist_dirIsCreated(
 
 
 def test_store_newFileCreated(
-    repo_path: Path, repo: IBalanceRepo, example_log: BalanceLog
+    repo_path: Path, repo: IBalanceRepo, example_log: BalanceHistory
 ):
     expected_file_path = repo_path / (example_log.id.value + ".csv")
 
-    repo.store_new_log(example_log)
+    repo.store_new_history(example_log)
 
     assert expected_file_path.exists()
     assert expected_file_path.is_file()
 
 
 def test_storeLoad_logsAreEqual(
-    repo: IBalanceRepo, example_log: BalanceLog
+    repo: IBalanceRepo, example_log: BalanceHistory
 ):
-    repo.store_new_log(example_log)
-    log = repo.load_log(example_log.id)
+    repo.store_new_history(example_log)
+    log = repo.load_history(example_log.id)
     assert log == example_log
 
 
-def test_storeStore_raise(repo: IBalanceRepo, example_log: BalanceLog):
-    repo.store_new_log(example_log)
+def test_storeStore_raise(repo: IBalanceRepo, example_log: BalanceHistory):
+    repo.store_new_history(example_log)
     with pytest.raises(DuplicateIdError):
-        repo.store_new_log(example_log)
+        repo.store_new_history(example_log)
 
 
 def test_load_raise(repo: IBalanceRepo):
     with pytest.raises(UnknownIdError):
-        repo.load_log(LogId("whatever"))
+        repo.load_history(HistoryId("whatever"))

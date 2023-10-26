@@ -1,10 +1,10 @@
 import csv
-from typing import List
 import dataclasses as dc
 from datetime import datetime
 
 from pathlib import Path
-from .types import Balance
+from prediction.types import Balance, BalanceHistory, HistoryId
+from prediction.interface import IBalanceRepo
 
 
 class BalanceRepoException(Exception):
@@ -19,51 +19,32 @@ class UnknownIdError(BalanceRepoException):
     ...
 
 
-@dc.dataclass(frozen=True)
-class LogId:
-    value: str
-
-
-@dc.dataclass(frozen=True)
-class BalanceLog:
-    id: LogId
-    balances: List[Balance]
-
-
-class IBalanceRepo:
-    def store_new_log(self, log: BalanceLog) -> None:
-        raise NotImplementedError()
-
-    def load_log(self, log_id: LogId) -> BalanceLog:
-        raise NotImplementedError()
-
-
 class CsvBalanceRepo(IBalanceRepo):
     def __init__(self, path: Path) -> None:
         self.__path = path
         self.__path.mkdir(exist_ok=True)
 
-    def store_new_log(self, log: BalanceLog) -> None:
+    def store_new_history(self, history: BalanceHistory) -> None:
         try:
-            self.__store_new_log(log)
+            self.__store_new_history(history)
         except FileExistsError as err:
             raise DuplicateIdError from err
 
-    def __store_new_log(self, log: BalanceLog) -> None:
-        new_file_path = self.__id_to_path(log.id)
+    def __store_new_history(self, history: BalanceHistory) -> None:
+        new_file_path = self.__id_to_path(history.id)
         with open(new_file_path, "x") as file:
             writer = csv.writer(file)
-            for balance in log.balances:
+            for balance in history.balances:
                 to_write = dc.astuple(balance)
                 writer.writerow(to_write)
 
-    def load_log(self, log_id: LogId) -> BalanceLog:
+    def load_history(self, history_id: HistoryId) -> BalanceHistory:
         try:
-            return self.__load_log(log_id)
+            return self.__load_history(history_id)
         except FileNotFoundError as err:
             raise UnknownIdError from err
 
-    def __load_log(self, log_id: LogId) -> BalanceLog:
+    def __load_history(self, log_id: HistoryId) -> BalanceHistory:
         file_path = self.__id_to_path(log_id)
         balances = []
         with open(file_path) as file:
@@ -73,8 +54,8 @@ class CsvBalanceRepo(IBalanceRepo):
                 date = datetime.fromisoformat(row[1])
                 value = int(row[2])
                 balances.append(Balance(description, date, value))
-        return BalanceLog(log_id, balances)
+        return BalanceHistory(log_id, balances)
 
-    def __id_to_path(self, log_id: LogId) -> Path:
-        file_name = log_id.value + ".csv"
+    def __id_to_path(self, history_id: HistoryId) -> Path:
+        file_name = history_id.value + ".csv"
         return self.__path / file_name
