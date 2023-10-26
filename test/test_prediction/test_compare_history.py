@@ -1,6 +1,8 @@
 import pytest
+from typing import List
+from datetime import date
 
-from prediction.types import Balance, BalanceHistory, HistoryId
+from prediction.types import BalanceHistory, HistoryId, Balance, Difference
 from prediction import HistoryComparator
 
 
@@ -25,5 +27,33 @@ def test_compareEmtryDifferentId_noDifferences():
     assert not comparition.diffs
 
 
-def test_comparitionStartsAtCommonDate():
-    pass
+@pytest.mark.parametrize(
+    "base_balances, compared_balances, desired",
+    (
+        pytest.param(
+            [Balance("", date(2022, 10, 11), 1_300)],
+            [Balance("", date(2022, 2, 23), 5_000)],
+            Difference(date(2022, 10, 11), 3_700),
+            id="compared starts first"
+        ),
+        pytest.param(
+            [Balance("", date(2022, 2, 23), 5_000)],
+            [Balance("", date(2022, 10, 9), 1_300)],
+            Difference(date(2022, 10, 9), -3_700),
+            id="base starts first"
+        ),
+    )
+)
+def test_comparition(
+    base_balances: List[Balance],
+    compared_balances: List[Balance],
+    desired: Difference
+):
+    history_id = HistoryId("nothin")
+    base = BalanceHistory(history_id, base_balances)
+    compared = BalanceHistory(history_id, compared_balances)
+    comparator = HistoryComparator(base, compared)
+
+    result = comparator.compare()
+
+    assert result.diffs == [desired]

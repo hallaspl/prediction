@@ -4,6 +4,7 @@ from typing import Optional, Tuple, List
 
 from dataclasses import dataclass
 import datetime
+from .errors import ValidationError
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,11 @@ class BalanceHistory:
     id: HistoryId
     balances: List[Balance]
 
+    def __post_init__(self) -> None:
+        for previous, next in zip(self.balances[:-1], self.balances[1:]):
+            if previous.date > next.date:
+                raise ValidationError("balances dates are descending")
+
 
 @dataclass(frozen=True)
 class HistoryId:
@@ -63,5 +69,16 @@ class HistoryId:
 @dataclass(frozen=True)
 class Balance:
     description: str
+    date: datetime.date
+    value: float
+
+
+@dataclass(frozen=True)
+class Comparition:
+    diffs: List[Difference]
+
+
+@dataclass(frozen=True)
+class Difference:
     date: datetime.date
     value: float

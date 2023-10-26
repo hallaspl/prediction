@@ -1,19 +1,6 @@
 from __future__ import annotations
-from typing import List
-from datetime import datetime
-from dataclasses import dataclass
-from .types import BalanceHistory
-
-
-@dataclass(frozen=True)
-class Comparition:
-    diffs: List[Difference]
-
-
-@dataclass(frozen=True)
-class Difference:
-    date: datetime.date
-    value: float
+from datetime import date
+from .types import BalanceHistory, Comparition, Difference
 
 
 class HistoryComparator:
@@ -22,4 +9,22 @@ class HistoryComparator:
         self.__compared = compared
 
     def compare(self) -> Comparition:
-        return Comparition(diffs=[])
+        histories_are_empty = (
+            not self.__base.balances
+            and not self.__compared.balances
+        )
+        if histories_are_empty:
+            return Comparition(diffs=[])
+        base_balance = self.__base.balances[0]
+        compared_balance = self.__compared.balances[0]
+        if base_balance.date < compared_balance.date:
+            value = compared_balance.value - base_balance.value
+            diff = Difference(compared_balance.date, value)
+        if compared_balance.date < base_balance.date:
+            value = compared_balance.value - base_balance.value
+            diff = Difference(base_balance.date, value)
+        return Comparition(diffs=[diff])
+        
+        
+        
+
