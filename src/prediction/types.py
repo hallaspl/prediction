@@ -55,7 +55,6 @@ class BalanceHistory:
     balances: List[Balance]
 
 
-
 @dataclass(frozen=True)
 class HistoryId:
     value: str
