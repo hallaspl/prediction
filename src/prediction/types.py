@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from dataclasses import dataclass
 import datetime
@@ -47,6 +47,18 @@ class Event:
     description: str
     date: datetime.date
     balance_impact: float
+
+
+@dataclass(frozen=True)
+class BalanceHistory:
+    id: HistoryId
+    balances: List[Balance]
+
+
+
+@dataclass(frozen=True)
+class HistoryId:
+    value: str
 
 
 @dataclass(frozen=True)
