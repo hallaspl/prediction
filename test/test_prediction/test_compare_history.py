@@ -30,12 +30,6 @@ def test_compareEmtryDifferentId_noDifferences():
 @pytest.mark.parametrize(
     "base_balances, compared_balances, desired",
     (
-        # pytest.param(
-        #     [Balance("", date(2022, 10, 11), 1_300)],
-        #     [Balance("", date(2022, 2, 23), 5_000)],
-        #     [Difference(date(2022, 10, 11), 3_700)],
-        #     id="compared starts first"
-        # ),
         pytest.param(
             [Balance("", date(2022, 2, 23), 5_000)],
             [Balance("", date(2022, 10, 9), 1_300)],
@@ -69,6 +63,12 @@ def test_compareEmtryDifferentId_noDifferences():
                 Difference(date(2022, 10, 15), -2_700)
             ],
             id="base starts first, alterating"
+        ),
+        pytest.param(
+            [Balance("", date(2022, 10, 11), 1_300)],
+            [Balance("", date(2022, 2, 23), 5_000)],
+            [Difference(date(2022, 10, 11), 3_700)],
+            id="compared starts first"
         ),
     )
 )
