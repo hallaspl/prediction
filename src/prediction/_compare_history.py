@@ -1,30 +1,45 @@
 from __future__ import annotations
+from typing import List
 from datetime import date
-from .types import BalanceHistory, Comparition, Difference
+from .types import BalanceHistory, Comparition, Difference, Balance
 
 
 class HistoryComparator:
     def __init__(self, base: BalanceHistory, compared: BalanceHistory) -> None:
         self.__base = base
         self.__compared = compared
+        self.__n_compared = 0
 
     def compare(self) -> Comparition:
-        histories_are_empty = (
-            not self.__base.balances
-            and not self.__compared.balances
-        )
-        if histories_are_empty:
-            return Comparition(diffs=[])
-        base_balance = self.__base.balances[0]
-        compared_balance = self.__compared.balances[0]
-        if base_balance.date < compared_balance.date:
-            value = compared_balance.value - base_balance.value
-            diff = Difference(compared_balance.date, value)
-        if compared_balance.date < base_balance.date:
-            value = compared_balance.value - base_balance.value
-            diff = Difference(base_balance.date, value)
-        return Comparition(diffs=[diff])
-        
-        
-        
-
+        differences = []
+        for balance, next_balance in zip(self.__base.balances[:-1], self.__base.balances[1:]):
+            differences += self.__diffs_in_span(balance, next_balance)
+        if self.__base.balances:
+            to_compare = self.__compared.balances[self.__n_compared:]
+            differences += self.__diffs_to_balance(self.__base.balances[-1], to_compare)
+        return Comparition(diffs=differences)
+    
+    def __diffs_in_span(self, start_balance: Balance, end_balance: Balance) -> List[Difference]:
+        diffs = []
+        to_compare = self.__to_compare_in_timespan(start_balance.date, end_balance.date)
+        diffs += self.__diffs_to_balance(start_balance, to_compare)
+        last_compared = self.__compared.balances[self.__n_compared - 1]
+        end_diff = Difference(end_balance.date, last_compared.value - end_balance.value)
+        diffs.append(end_diff)
+        return diffs
+    
+    def __to_compare_in_timespan(self, start_date: date, end_date: date) -> List[Balance]:
+        to_compare = []
+        for balance in self.__compared.balances[self.__n_compared:]:
+            if start_date < balance.date < end_date:
+                to_compare.append(balance)
+        return to_compare
+    
+    def __diffs_to_balance(self, base_balance: Balance, to_compare: List[Balance]) -> List[Difference]:
+        print(to_compare)
+        result = []
+        for compared in to_compare:
+            diff = Difference(compared.date, compared.value - base_balance.value)
+            self.__n_compared += 1
+            result.append(diff)
+        return result
