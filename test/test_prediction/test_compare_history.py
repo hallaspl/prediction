@@ -130,23 +130,23 @@ def test_compareEmptyDifferentId_noDifferences():
             ],
             id="same date compared"
         ),
-        # pytest.param(
-        #     [
-        #         Balance("", date(2022, 10, 1), 1_000),
-        #         Balance("", date(2022, 10, 11), 10_000),
-        #         Balance("", date(2022, 10, 15), 4_000),
-        #     ],
-        #     [
-        #         Balance("", date(2022, 2, 23), 5_000),
-        #         Balance("", date(2022, 10, 11), 7_000),
-        #     ],
-        #     [
-        #         Difference(date(2022, 10, 1), 4_000),
-        #         Difference(date(2022, 10, 11), -3_000),
-        #         Difference(date(2022, 10, 15), 3_000),
-        #     ],
-        #     id="same date reversed"
-        # ),
+        pytest.param(
+            [
+                Balance("", date(2022, 10, 1), 1_000),
+                Balance("", date(2022, 10, 11), 10_000),
+                Balance("", date(2022, 10, 15), 4_000),
+            ],
+            [
+                Balance("", date(2022, 2, 23), 5_000),
+                Balance("", date(2022, 10, 11), 7_000),
+            ],
+            [
+                Difference(date(2022, 10, 1), 4_000),
+                Difference(date(2022, 10, 11), -3_000),
+                Difference(date(2022, 10, 15), 3_000),
+            ],
+            id="same date reversed"
+        ),
         pytest.param(
             [Balance("", date(2022, 10, 11), 1_300)],
             [Balance("", date(2022, 2, 23), 5_000)],
