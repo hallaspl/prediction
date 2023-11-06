@@ -17,7 +17,7 @@ def test_compareEmpty_noDifferences():
     assert not result.diffs
 
 
-def test_compareEmtryDifferentId_noDifferences():
+def test_compareEmptyDifferentId_noDifferences():
     first = BalanceHistory(HistoryId("first"), [])
     second = BalanceHistory(HistoryId("second"), [])
     comparator = HistoryComparator(first, second)
@@ -37,6 +37,12 @@ def test_compareEmtryDifferentId_noDifferences():
             id="base starts first, one compared"
         ),
         pytest.param(
+            [Balance("", date(2022, 10, 9), 1_300)],
+            [Balance("", date(2022, 2, 23), 5_000)],
+            [Difference(date(2022, 10, 9), 3_700)],
+            id="base starts later, one compared"
+        ),
+        pytest.param(
             [Balance("", date(2022, 2, 23), 5_000)],
             [
                 Balance("", date(2022, 10, 9), 1_300),
@@ -47,6 +53,18 @@ def test_compareEmtryDifferentId_noDifferences():
                 Difference(date(2022, 10, 10), -700)
             ],
             id="base starts first, two compared"
+        ),
+        pytest.param(
+            [
+                Balance("", date(2022, 10, 9), 1_300),
+                Balance("", date(2022, 10, 10), 4_300)
+            ],
+            [Balance("", date(2022, 2, 23), 5_000)],
+            [
+                Difference(date(2022, 10, 9), 3_700),
+                Difference(date(2022, 10, 10), 700)
+            ],
+            id="compared start first, one compared"
         ),
         pytest.param(
             [
@@ -106,6 +124,20 @@ def test_compareEmtryDifferentId_noDifferences():
             [Difference(date(2022, 10, 11), 7_000)],
             id="many past balances, date equal"
         ),
+        # pytest.param(
+        #     [
+        #         Balance("", date(2022, 10, 11), 1_000),
+        #         Balance("", date(2022, 11, 11), 1_000),
+        #         Balance("", date(2022, 12, 11), 1_000),
+        #     ],
+        #     [
+        #         Balance("", date(2022, 2, 23), 5_000),
+        #         Balance("", date(2022, 3, 23), 6_000),
+        #         Balance("", date(2022, 10, 11), 8_000),
+        #     ],
+        #     [Difference(date(2022, 10, 11), 7_000)],
+        #     id="many past balances, date equal"
+        # ),
     )
 )
 def test_compare(
