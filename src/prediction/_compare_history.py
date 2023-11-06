@@ -20,18 +20,18 @@ class HistoryComparator:
         return Comparition(diffs=differences)
     
     def __diffs_in_span(self, start_balance: Balance, end_balance: Balance) -> List[Difference]:
-        diffs = []
+        diffs = self.__diffs_from_early_compared(start_balance)    
         to_compare = self.__to_compare_in_timespan(start_balance.date, end_balance.date)
         diffs += self.__diffs_to_balance(start_balance, to_compare)
-        next_compared = self.__compared.balances[self.__n_compared]
-        if next_compared.date > end_balance.date:
-            last_compared = self.__compared.balances[self.__n_compared - 1]
-            end_diff = Difference(end_balance.date, last_compared.value - end_balance.value)
-            diffs.append(end_diff)
-        if next_compared.date < start_balance.date:
-            diff_to_start = Difference(start_balance.date, next_compared.value - start_balance.value)
-            diffs.append(diff_to_start)
+        diffs += self.__diffs_from_late_compared(end_balance)
         return diffs
+    
+    def __diffs_from_early_compared(self, start_balance: Balance) -> List[Difference]:
+        next_compared = self.__compared.balances[self.__n_compared]
+        if next_compared.date < start_balance.date:
+            start_diff = Difference(start_balance.date, next_compared.value - start_balance.value)
+            return [start_diff]
+        return []
     
     def __to_compare_in_timespan(self, start_date: date, end_date: date) -> List[Balance]:
         to_compare = []
@@ -39,6 +39,14 @@ class HistoryComparator:
             if start_date < balance.date < end_date:
                 to_compare.append(balance)
         return to_compare
+    
+    def __diffs_from_late_compared(self, end_balance: Balance) -> List[Difference]:
+        next_compared = self.__compared.balances[self.__n_compared]
+        if next_compared.date > end_balance.date:
+            last_compared = self.__compared.balances[self.__n_compared - 1]
+            end_diff = Difference(end_balance.date, last_compared.value - end_balance.value)
+            return [end_diff]
+        return []
     
     def __process_last_base_balance(self) -> List[Difference]:
         last_balance = self.__base.balances[-1]
@@ -51,8 +59,6 @@ class HistoryComparator:
             if balance.date >= start_date:
                 return to_compare[idx:]
         return to_compare[-1:]
-
-
 
     def __diffs_to_balance(self, base_balance: Balance, to_compare: List[Balance]) -> List[Difference]:
         result = []

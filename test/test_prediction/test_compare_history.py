@@ -84,6 +84,22 @@ def test_compareEmptyDifferentId_noDifferences():
         ),
         pytest.param(
             [
+                Balance("", date(2022, 10, 1), 1_300),
+                Balance("", date(2022, 10, 15), 4_300)
+            ],
+            [
+                Balance("", date(2022, 2, 23), 5_000),
+                Balance("", date(2022, 10, 11), 7_000)
+            ],
+            [
+                Difference(date(2022, 10, 1), 3_700),
+                Difference(date(2022, 10, 11), 5_700),
+                Difference(date(2022, 10, 15), 2_700)
+            ],
+            id="compared starts first, alterating"
+        ),
+        pytest.param(
+            [
                 Balance("", date(2022, 2, 23), 5_000),
                 Balance("", date(2022, 10, 11), 7_000),
             ],
