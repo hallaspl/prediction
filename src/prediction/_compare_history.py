@@ -15,10 +15,7 @@ class HistoryComparator:
         differences = []
         self.__n_compared = 0
         self.__skip_early_compared()
-        try:
-            differences += self.__diffs_from_early_compared(self.__base.balances[0], self.__base.balances[1])
-        except IndexError:
-            pass
+        differences += self.__process_first_span()
         for balance, next_balance in zip(self.__base.balances[:-1], self.__base.balances[1:]):
             differences += self.__diffs_in_span(balance, next_balance)
         if self.__base.balances:
@@ -36,21 +33,19 @@ class HistoryComparator:
     def __diffs_in_span(self, start_balance: Balance, end_balance: Balance) -> List[Difference]:
         diffs = []
         to_compare = self.__to_compare_in_timespan(start_balance.date, end_balance.date)
-        print("to_compare", to_compare)
-        print("__n_compared", self.__n_compared)
-        print("__diffs_in_span", diffs)
         diffs += self.__diffs_to_balance(start_balance, to_compare)
         diffs += self.__diffs_from_late_compared(end_balance)
-        print("__diffs_in_span", diffs)
         return diffs
     
-    def __diffs_from_early_compared(self, start_balance: Balance, end_balance: Balance) -> List[Difference]:
-        diffs = []
+    def __process_first_span(self) -> List[Difference]:
+        if len(self.__base.balances) < 2:
+            return []
+        start_balance = self.__base.balances[0]
         to_compare = self.__compared.balances[self.__n_compared]
         if to_compare.date < start_balance.date:
             start_diff = Difference(start_balance.date, to_compare.value - start_balance.value)
-            diffs.append(start_diff)
-        return diffs
+            return [start_diff]
+        return []
     
     def __to_compare_in_timespan(self, start_date: date, end_date: date) -> List[Balance]:
         to_compare = []

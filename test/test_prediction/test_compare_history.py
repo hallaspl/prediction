@@ -174,17 +174,21 @@ def test_compareEmptyDifferentId_noDifferences():
         ),
         # pytest.param(
         #     [
-        #         Balance("", date(2022, 10, 11), 1_000),
-        #         Balance("", date(2022, 11, 11), 1_000),
-        #         Balance("", date(2022, 12, 11), 1_000),
+        #         Balance("", date(2022, 10, 11), 10),
+        #         Balance("", date(2022, 11, 11), 20),
+        #         Balance("", date(2022, 12, 11), 30),
         #     ],
         #     [
-        #         Balance("", date(2022, 2, 23), 5_000),
-        #         Balance("", date(2022, 3, 23), 6_000),
-        #         Balance("", date(2022, 10, 11), 8_000),
+        #         Balance("", date(2022, 2, 23), 1_000),
+        #         Balance("", date(2022, 3, 23), 2_000),
+        #         Balance("", date(2022, 10, 11), 80),
         #     ],
-        #     [Difference(date(2022, 10, 11), 7_000)],
-        #     id="many past balances, date equal"
+        #     [
+        #         Difference(date(2022, 10, 11), 70),
+        #         Difference(date(2022, 11, 11), 60),
+        #         Difference(date(2022, 12, 11), 50),
+        #     ],
+        #     id="many base relates to last compared"
         # ),
     )
 )
