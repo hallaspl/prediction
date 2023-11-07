@@ -27,13 +27,10 @@ class HistoryComparator:
         except IndexError:
             return Comparition(diffs=[])
         self.__fill_common_dates()
-        print(self.__common_dates)
         self.__base = self.__align_first_balance(self.__base)
         self.__base = self.__align_to_common_dates(self.__base)
         self.__compared = self.__align_first_balance(self.__compared)
         self.__compared = self.__align_to_common_dates(self.__compared)
-        print(self.__base)
-        print(self.__compared)
         differences = []
         for base, compared in zip(self.__base, self.__compared):
             if base.date < self.__first_date:
