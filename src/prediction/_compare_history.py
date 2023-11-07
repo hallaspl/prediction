@@ -1,84 +1,85 @@
 from __future__ import annotations
 import dataclasses as ds
+from itertools import chain
 from typing import List
 from datetime import date
 from .types import BalanceHistory, Comparition, Difference, Balance
 
 
+class ComparatorException(Exception):
+    pass
+
+
+class BaseIsEmpty(ComparatorException):
+    pass
+
+
 class HistoryComparator:
     def __init__(self, base: BalanceHistory, compared: BalanceHistory) -> None:
-        self.__base = base
-        self.__compared = compared
-        self.__n_compared = 0
+        self.__base = base.balances
+        self.__compared = compared.balances
+        self.__common_dates: List[date] = []
+        self.__first_date: date = None
 
     def compare(self) -> Comparition:
+        try:
+            self.__first_date = max(self.__base[0].date, self.__compared[0].date)
+        except IndexError:
+            return Comparition(diffs=[])
+        self.__fill_common_dates()
+        print(self.__common_dates)
+        self.__base = self.__align_first_balance(self.__base)
+        self.__base = self.__align_to_common_dates(self.__base)
+        self.__compared = self.__align_first_balance(self.__compared)
+        self.__compared = self.__align_to_common_dates(self.__compared)
+        print(self.__base)
+        print(self.__compared)
         differences = []
-        self.__n_compared = 0
-        self.__skip_early_compared()
-        differences += self.__diffs_from_first_span()
-        for balance, next_balance in zip(self.__base.balances[:-1], self.__base.balances[1:]):
-            differences += self.__diffs_from_span(balance, next_balance)
-        if self.__base.balances:
-            differences += self.__process_last_base_balance()
+        for base, compared in zip(self.__base, self.__compared):
+            if base.date < self.__first_date:
+                continue
+            assert base.date == compared.date, f"{base}, {compared}"
+            diff = Difference(date=base.date, value=compared.value - base.value)
+            differences.append(diff)
         return Comparition(diffs=differences)
-    
-    def __skip_early_compared(self) -> None:
-        if not self.__base.balances:
-            return
-        first_base = self.__base.balances[0]
-        for comp in self.__compared.balances[self.__n_compared + 1:]:
-            if comp.date < first_base.date:
-                self.__n_compared += 1
 
-    def __diffs_from_span(self, start_balance: Balance, end_balance: Balance) -> List[Difference]:
-        diffs = []
-        to_compare = self.__to_compare_in_timespan(start_balance.date, end_balance.date)
-        diffs += self.__diffs_to_balance(start_balance, to_compare)
-        diffs += self.__diffs_from_late_compared(end_balance)
-        return diffs
-    
-    def __diffs_from_first_span(self) -> List[Difference]:
-        if len(self.__base.balances) < 2:
-            return []
-        start_balance = self.__base.balances[0]
-        to_compare = self.__compared.balances[self.__n_compared]
-        if to_compare.date < start_balance.date:
-            start_diff = Difference(start_balance.date, to_compare.value - start_balance.value)
-            return [start_diff]
-        return []
-    
-    def __to_compare_in_timespan(self, start_date: date, end_date: date) -> List[Balance]:
-        to_compare = []
-        for balance in self.__compared.balances[self.__n_compared:]:
-            if start_date <= balance.date < end_date:
-                to_compare.append(balance)
-        return to_compare
-    
-    def __diffs_from_late_compared(self, end_balance: Balance) -> List[Difference]:
-        next_compared = self.__compared.balances[self.__n_compared]
-        if next_compared.date > end_balance.date:
-            last_compared = self.__compared.balances[self.__n_compared - 1]
-            end_diff = Difference(end_balance.date, last_compared.value - end_balance.value)
-            return [end_diff]
-        return []
-    
-    def __process_last_base_balance(self) -> List[Difference]:
-        last_balance = self.__base.balances[-1]
-        to_compare = self.__compared.balances[self.__n_compared:]
-        to_compare = self.__remove_past_balances(to_compare, last_balance.date)
-        return self.__diffs_to_balance(last_balance, to_compare)
-    
-    def __remove_past_balances(self, to_compare: List[Balance], start_date: date) -> List[Balance]:
-        for idx, balance in enumerate(to_compare):
-            if balance.date >= start_date:
-                return to_compare[idx:]
-        return to_compare[-1:]
+    def __fill_common_dates(self) -> None:
+        dates = chain((b.date for b in self.__base), (c.date for c in self.__compared))
+        dates_set = set(dates)
+        self.__common_dates = list(d for d in dates_set if d >= self.__first_date)
+        self.__common_dates.sort()
 
-    def __diffs_to_balance(self, base_balance: Balance, to_compare: List[Balance]) -> List[Difference]:
-        result = []
-        for compared in to_compare:
-            diff_date = max(base_balance.date, compared.date)
-            diff = Difference(diff_date, compared.value - base_balance.value)
-            self.__n_compared += 1
-            result.append(diff)
-        return result
+    def __align_first_balance(self, balances: List[Balance]) -> List[Balance]:
+        n_skipped = 0
+        first_balance = None
+        for bal in balances:
+            if bal.date <= self.__first_date:
+                first_balance = ds.replace(bal, date=self.__first_date)
+                n_skipped += 1
+        if first_balance:
+            return [first_balance] + balances[n_skipped:]
+        return balances
+
+    def __align_to_common_dates(self, source: List[Balance]) -> List[Balance]:
+        aligned = []
+        balance_idx = 0
+        date_idx = 0
+        while True:
+            try:
+                bal = source[balance_idx]
+            except IndexError:
+                bal = prev_bal
+            try:
+                current = self.__common_dates[date_idx]
+            except IndexError:
+                break
+            if bal.date == current:
+                aligned.append(bal)
+                prev_bal = bal
+                balance_idx += 1
+            if bal.date < current:
+                aligned.append(ds.replace(bal, date=current))
+            elif bal.date > current:
+                aligned.append(ds.replace(prev_bal, date=current))
+            date_idx += 1
+        return aligned
