@@ -64,6 +64,7 @@ class HistoryComparator:
         aligned = []
         balance_idx = 0
         date_idx = 0
+        prev_bal = None
         while True:
             try:
                 bal = source[balance_idx]
