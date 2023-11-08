@@ -17,14 +17,15 @@ def test_compareEmpty_noDifferences():
     assert not result.diffs
 
 
-def test_compareEmptyDifferentId_noDifferences():
+def test_comapredIdsAreSaved():
     first = BalanceHistory(HistoryId("first"), [])
     second = BalanceHistory(HistoryId("second"), [])
     comparator = HistoryComparator(first, second)
 
-    comparition = comparator.compare()
+    result = comparator.compare()
 
-    assert not comparition.diffs
+    assert result.base_id == HistoryId("first")
+    assert result.compared_id == HistoryId("second")
 
 
 @pytest.mark.parametrize(
@@ -189,6 +190,24 @@ def test_compareEmptyDifferentId_noDifferences():
                 Difference(date(2022, 12, 11), 50),
             ],
             id="many base relates to last compared"
+        ),
+        pytest.param(
+            [
+                Balance("", date(2022, 10, 11), 100),
+                Balance("", date(2022, 11, 11), 200),
+                Balance("", date(2022, 12, 11), 300),
+            ],
+            [
+                Balance("", date(2022, 10, 1), 1_000),
+                Balance("", date(2022, 10, 12), 1_100),
+            ],
+            [
+                Difference(date(2022, 10, 11), 900),
+                Difference(date(2022, 10, 12), 1_000),
+                Difference(date(2022, 11, 11), 900),
+                Difference(date(2022, 12, 11), 800),
+            ],
+            id="many base after last compared"
         ),
         pytest.param(
             [

@@ -16,6 +16,10 @@ class BaseIsEmpty(ComparatorException):
 
 class HistoryComparator:
     def __init__(self, base: BalanceHistory, compared: BalanceHistory) -> None:
+        self.__base = base
+        self.__compared = compared
+        self.__id_base = base.id
+        self.__id_compared = compared.id
         self.__base = base.balances
         self.__compared = compared.balances
         self.__common_dates: List[date] = []
@@ -25,7 +29,7 @@ class HistoryComparator:
         try:
             self.__first_date = max(self.__base[0].date, self.__compared[0].date)
         except IndexError:
-            return Comparition(diffs=[])
+            return Comparition(diffs=[], base_id=self.__id_base, compared_id=self.__id_compared)
         self.__fill_common_dates()
         self.__base = self.__align_first_balance(self.__base)
         self.__base = self.__align_to_common_dates(self.__base)
@@ -38,7 +42,9 @@ class HistoryComparator:
             assert base.date == compared.date, f"{base}, {compared}"
             diff = Difference(date=base.date, value=compared.value - base.value)
             differences.append(diff)
-        return Comparition(diffs=differences)
+        return Comparition(
+            diffs=differences, base_id=self.__id_base, compared_id=self.__id_compared
+        )
 
     def __fill_common_dates(self) -> None:
         dates = chain((b.date for b in self.__base), (c.date for c in self.__compared))

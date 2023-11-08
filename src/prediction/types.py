@@ -75,6 +75,8 @@ class Balance:
 
 @dataclass(frozen=True)
 class Comparition:
+    base_id: HistoryId
+    compared_id: HistoryId
     diffs: List[Difference]
 
 
