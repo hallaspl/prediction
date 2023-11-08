@@ -3,7 +3,7 @@ import dataclasses as ds
 from itertools import chain
 from typing import List
 from datetime import date
-from .types import BalanceHistory, Comparition, Difference, Balance
+from .types import BalanceHistory, Comparition, Difference, Balance, Event
 
 
 class ComparatorException(Exception):
@@ -18,36 +18,34 @@ class HistoryComparator:
     def __init__(self, base: BalanceHistory, compared: BalanceHistory) -> None:
         self.__base = base
         self.__compared = compared
-        self.__id_base = base.id
-        self.__id_compared = compared.id
-        self.__base = base.balances
-        self.__compared = compared.balances
+        self.__aligned_base: List[Event] = None
+        self.__aligned_compared: List[Event] = None
         self.__common_dates: List[date] = []
         self.__first_date: date = None
 
     def compare(self) -> Comparition:
         try:
-            self.__first_date = max(self.__base[0].date, self.__compared[0].date)
+            self.__first_date = max(self.__base.balances[0].date, self.__compared.balances[0].date)
         except IndexError:
-            return Comparition(diffs=[], base_id=self.__id_base, compared_id=self.__id_compared)
+            return Comparition(diffs=[], base_id=self.__base.id, compared_id=self.__compared.id)
         self.__fill_common_dates()
-        self.__base = self.__align_first_balance(self.__base)
-        self.__base = self.__align_to_common_dates(self.__base)
-        self.__compared = self.__align_first_balance(self.__compared)
-        self.__compared = self.__align_to_common_dates(self.__compared)
+        self.__aligned_base = self.__align_first_balance(self.__base.balances)
+        self.__aligned_base = self.__align_to_common_dates(self.__aligned_base)
+        self.__aligned_compared = self.__align_first_balance(self.__compared.balances)
+        self.__aligned_compared = self.__align_to_common_dates(self.__aligned_compared)
         differences = []
-        for base, compared in zip(self.__base, self.__compared):
+        for base, compared in zip(self.__aligned_base, self.__aligned_compared):
             if base.date < self.__first_date:
                 continue
             assert base.date == compared.date, f"{base}, {compared}"
             diff = Difference(date=base.date, value=compared.value - base.value)
             differences.append(diff)
         return Comparition(
-            diffs=differences, base_id=self.__id_base, compared_id=self.__id_compared
+            diffs=differences, base_id=self.__base.id, compared_id=self.__compared.id
         )
 
     def __fill_common_dates(self) -> None:
-        dates = chain((b.date for b in self.__base), (c.date for c in self.__compared))
+        dates = chain((b.date for b in self.__base.balances), (c.date for c in self.__compared.balances))
         dates_set = set(dates)
         self.__common_dates = list(d for d in dates_set if d >= self.__first_date)
         self.__common_dates.sort()
