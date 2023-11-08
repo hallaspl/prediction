@@ -29,10 +29,8 @@ class HistoryComparator:
         except IndexError:
             return Comparition(diffs=[], base_id=self.__base.id, compared_id=self.__compared.id)
         self.__fill_common_dates()
-        self.__aligned_base = self.__align_first_balance(self.__base.balances)
-        self.__aligned_base = self.__align_to_common_dates(self.__aligned_base)
-        self.__aligned_compared = self.__align_first_balance(self.__compared.balances)
-        self.__aligned_compared = self.__align_to_common_dates(self.__aligned_compared)
+        self.__aligned_base = self.__align(self.__base.balances)
+        self.__aligned_compared = self.__align(self.__compared.balances)
         differences = []
         for base, compared in zip(self.__aligned_base, self.__aligned_compared):
             if base.date < self.__first_date:
@@ -49,6 +47,10 @@ class HistoryComparator:
         dates_set = set(dates)
         self.__common_dates = list(d for d in dates_set if d >= self.__first_date)
         self.__common_dates.sort()
+
+    def __align(self, balances: List[Balance]) -> List[Balance]:
+        aligned = self.__align_first_balance(balances)
+        return self.__align_to_common_dates(aligned)
 
     def __align_first_balance(self, balances: List[Balance]) -> List[Balance]:
         n_skipped = 0
