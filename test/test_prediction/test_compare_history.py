@@ -190,6 +190,47 @@ def test_compareEmptyDifferentId_noDifferences():
             ],
             id="many base relates to last compared"
         ),
+        pytest.param(
+            [
+                Balance("", date(2022, 10, 11), 10),
+                Balance("", date(2022, 10, 12), 15),
+                Balance("", date(2022, 10, 13), 5),
+                Balance("", date(2022, 11, 5), 100),
+                Balance("", date(2022, 11, 15), 200),
+                Balance("", date(2022, 11, 25), 300),
+            ],
+            [
+                Balance("", date(2022, 10, 2), 100),
+                Balance("", date(2022, 10, 12), 50),
+                Balance("", date(2022, 10, 15), 0),
+                Balance("", date(2022, 10, 18), -10),
+                Balance("", date(2022, 11, 1), 10),
+                Balance("", date(2022, 11, 2), 30),
+                Balance("", date(2022, 11, 8), 100),
+                Balance("", date(2022, 11, 10), 50),
+                Balance("", date(2022, 12, 1), 0),
+                Balance("", date(2022, 12, 2), 20),
+                Balance("", date(2022, 12, 3), 80),
+            ],
+            [
+               Difference(date(2022, 10, 11), 90),
+               Difference(date(2022, 10, 12), 35),
+               Difference(date(2022, 10, 13), 45),
+               Difference(date(2022, 10, 15), -5),
+               Difference(date(2022, 10, 18), -15),
+               Difference(date(2022, 11, 1), 5),
+               Difference(date(2022, 11, 2), 25),
+               Difference(date(2022, 11, 5), -70),
+               Difference(date(2022, 11, 8), 0),
+               Difference(date(2022, 11, 10), -50),
+               Difference(date(2022, 11, 15), -150),
+               Difference(date(2022, 11, 25), -250),
+               Difference(date(2022, 12, 1), -300),
+               Difference(date(2022, 12, 2), -280),
+               Difference(date(2022, 12, 3), -220),
+            ],
+            id="complex scenario"
+        ),
     )
 )
 def test_compare(
