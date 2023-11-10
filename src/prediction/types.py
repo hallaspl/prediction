@@ -47,6 +47,7 @@ class PeriodicEventData:
     month_day: int
 
 
+# TODO: Remove when possible
 @dataclass(frozen=True)
 class DataSourcesConfiguration:
     monthly_spending_paths: EventsDataPaths
@@ -55,12 +56,14 @@ class DataSourcesConfiguration:
     one_time_income_paths: EventsDataPaths
 
 
+# TODO: Remove, change to a domian call
 @dataclass(frozen=True)
 class ScenarioConfiguration:
     start_date: datetime.date
     end_date: datetime.date
 
 
+# TODO: Remove, change to a domian call
 @dataclass(frozen=True)
 class EventsDataPaths:
     paths: Tuple[str]
