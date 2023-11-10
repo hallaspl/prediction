@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, Tuple, List
 
+from enum import Enum
 from dataclasses import dataclass
 import datetime
 from .errors import ValidationError
@@ -17,6 +18,28 @@ class EventData:
 
 @dataclass(frozen=True)
 class MonthlyEventData:
+    description: str
+    value: float
+    start_date: datetime.date
+    end_date: Optional[datetime.date]
+    month_day: int
+
+
+class TimeUnit(Enum):
+    day = "d"
+    week = "w"
+    month = "m"
+    year = "y"
+
+
+@dataclass(frozen=True)
+class RepeatTime:
+    value: int
+    unit: TimeUnit
+
+
+@dataclass(frozen=True)
+class PeriodicEventData:
     description: str
     value: float
     start_date: datetime.date
