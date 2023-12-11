@@ -44,7 +44,7 @@ class PeriodicEventData:
     value: float
     start_date: datetime.date
     end_date: Optional[datetime.date]
-    month_day: int
+    repeat_time: RepeatTime
 
 
 # TODO: Remove when possible
