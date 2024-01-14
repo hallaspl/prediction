@@ -75,5 +75,12 @@ class EventsFileReader(Generic[T]):
             for line in file.readlines()[1:]:
                 line = line.strip()
                 if line:
-                    events.append(self.__transform_func(line))
+                    new_event = self.__new_event(line)
+                    events.append(new_event)
         return events
+    
+    def __new_event(self, line: str) -> T:
+        try:
+            return self.__transform_func(line)
+        except ValueError as err:
+            raise RuntimeError(f"Error during processing line: {line}") from err
